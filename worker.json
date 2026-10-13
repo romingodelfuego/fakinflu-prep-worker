@@ -2,15 +2,27 @@
   "name": "prep",
   "repo": "romingodelfuego/fakinflu-prep-worker",
   "visibility": "private",
-  "description": "fakinflu RunPod serverless worker: prep (org/model)",
+  "description": "fakinflu RunPod serverless worker: prep (extracteur de signal pour le remplacement de personnage) — Depth-Anything-V2 + MediaPipe Selfie/FaceMesh + Demucs + rubberband. Sorties: control_video, mask, face_landmarks, vocals (pitchee), audio_original, preview.",
+  "license": "Apache-2.0 (Depth-Anything-V2, MediaPipe), MIT (Demucs)",
   "endpoint": {
-    "name": "romingodelfuego/fakinflu-prep-worker",
+    "name": "fakinflu-prep-worker",
     "env_var": "RUNPOD_PREP_ENDPOINT_ID",
-    "gpu_pools": ["AMPERE_24"],
-    "workers": {"min": 0, "max": 2, "idleTimeout": 5},
-    "timeout_ms": 600000,
+    "gpu_pools": [
+      "AMPERE_24"
+    ],
+    "workers": {
+      "min": 0,
+      "max": 2,
+      "idleTimeout": 5
+    },
+    "timeout_ms": 1800000,
     "flashboot": "FLASHBOOT",
-    "disk_gb": 40,
-    "env": {}
-  }
+    "disk_gb": 30,
+    "env": {
+      "PREP_MAX_SECONDS": "30"
+    },
+    "notes": "Serverless (catalogue RunPod 2026-10-08) : AMPERE_24 0,69 $/h (A5000/3090/L4). Charge legere (Depth-Anything-V2 Small + MediaPipe CPU + Demucs). Mesurer au premier run ; passer sur ADA_24 si la depth sur longues videos est lente.",
+    "price_per_h": 0.69
+  },
+  "version": "v1.0.0"
 }
