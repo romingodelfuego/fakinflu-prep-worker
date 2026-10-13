@@ -7,8 +7,14 @@
   "endpoint": {
     "name": "fakinflu-prep-worker",
     "env_var": "RUNPOD_PREP_ENDPOINT_ID",
-    "gpu_pools": ["AMPERE_24"],
-    "workers": {"min": 0, "max": 2, "idleTimeout": 5},
+    "gpu_pools": [
+      "AMPERE_24"
+    ],
+    "workers": {
+      "min": 0,
+      "max": 2,
+      "idleTimeout": 5
+    },
     "timeout_ms": 1800000,
     "flashboot": "FLASHBOOT",
     "disk_gb": 30,
@@ -17,5 +23,6 @@
     },
     "notes": "Serverless (catalogue RunPod 2026-10-08) : AMPERE_24 0,69 $/h (A5000/3090/L4). Charge legere (Depth-Anything-V2 Small + MediaPipe CPU + Demucs). Mesurer au premier run ; passer sur ADA_24 si la depth sur longues videos est lente.",
     "price_per_h": 0.69
-  }
+  },
+  "version": "v1.0.0"
 }
