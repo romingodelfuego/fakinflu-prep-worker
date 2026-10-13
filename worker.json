@@ -1,0 +1,16 @@
+{
+  "name": "prep",
+  "repo": "romingodelfuego/fakinflu-prep-worker",
+  "visibility": "private",
+  "description": "fakinflu RunPod serverless worker: prep (org/model)",
+  "endpoint": {
+    "name": "romingodelfuego/fakinflu-prep-worker",
+    "env_var": "RUNPOD_PREP_ENDPOINT_ID",
+    "gpu_pools": ["AMPERE_24"],
+    "workers": {"min": 0, "max": 2, "idleTimeout": 5},
+    "timeout_ms": 600000,
+    "flashboot": "FLASHBOOT",
+    "disk_gb": 40,
+    "env": {}
+  }
+}
