@@ -1,1 +1,4 @@
-{"input": {"items": [{"id": "smoke", "prompt": "hello"}]}}
+{"input": {"run_id": "build-smoke", "r2": false,
+  "inputs": {"video": {"url": "https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/woman_holding_water_glass.mp4", "name": "test.mp4"}},
+  "outputs": {"control_video": {"max_bytes": 50000000}, "mask": {"max_bytes": 50000000}, "face_landmarks": {"max_bytes": 20000000}, "preview": {"max_bytes": 2000000}},
+  "params": {"mode": "bulletproof", "pitch_semitones": 3, "person_prompt": "person", "has_audio": true}}}
