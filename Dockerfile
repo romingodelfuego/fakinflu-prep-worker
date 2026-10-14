@@ -1,7 +1,9 @@
 # fakinflu — worker RunPod : prep (extracteur de signal, docs/plan-replace.md)
 # Build par RunPod (integration GitHub) a chaque GitHub Release : make worker-release W=prep
 # Poids BAKES (0 $ de stockage, aucun telechargement au cold start). Limite image RunPod : 80 Go.
-ARG CUDA_TAG=12.4.1-cudnn-runtime-ubuntu22.04
+# CUDA 12.8 : requis pour les cartes Blackwell (sm_120, ex. RTX PRO 6000) que RunPod planifie
+# desormais. torch cu124 ne porte QUE sm_50..sm_90 -> "no kernel image available" au boot sur Blackwell.
+ARG CUDA_TAG=12.8.1-cudnn-runtime-ubuntu22.04
 FROM nvidia/cuda:${CUDA_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -18,8 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 python3-pip git ca-certificates ffmpeg rubberband-cli libsndfile1 libgl1 libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
+# torch cu128 (2.7.1) : les wheels embarquent sm_80..sm_120 -> tourne sur Ampere/Ada ET Blackwell.
+# Les wheels portent leur propre runtime CUDA (independant du CUDA_TAG de base) ; le driver hote (>=12.8) suffit.
 RUN python3 -m pip install --upgrade pip setuptools wheel \
- && pip3 install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+ && pip3 install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 
 # Versions epinglees = builds reproductibles. numpy<2 : requis par mediapipe 0.10 et opencv.
 # Install SCINDE en couches : tout resoudre ensemble fait exploser le resolver pip en
