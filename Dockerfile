@@ -22,17 +22,19 @@ RUN python3 -m pip install --upgrade pip setuptools wheel \
  && pip3 install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
 
 # Versions epinglees = builds reproductibles. numpy<2 : requis par mediapipe 0.10 et opencv.
+# Install SCINDE en couches : tout resoudre ensemble fait exploser le resolver pip en
+# "resolution-too-deep" (demucs tire les sdists julius/lameenc + runpod tire fastapi[all] :
+# graphe trop profond). Chaque RUN resout un sous-graphe petit. huggingface_hub epingle (pas
+# de borne ouverte, qui aggrave le backtracking).
 RUN pip3 install \
       "numpy==1.26.4" \
       "transformers==4.46.3" \
-      "huggingface_hub>=0.27" \
+      "huggingface_hub==0.27.1" \
       "pillow==11.0.0" \
       "opencv-python-headless==4.10.0.84" \
-      "mediapipe==0.10.14" \
-      "demucs==4.0.1" \
-      "pyrubberband==0.3.0" \
-      "soundfile==0.12.1" \
-      runpod
+      "mediapipe==0.10.14"
+RUN pip3 install "demucs==4.0.1" "pyrubberband==0.3.0" "soundfile==0.12.1"
+RUN pip3 install runpod
 
 # Depth-Anything-V2 (petit modele, rapide) mis en cache HF au build.
 ARG DEPTH_MODEL=depth-anything/Depth-Anything-V2-Small-hf
