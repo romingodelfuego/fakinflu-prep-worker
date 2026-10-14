@@ -91,12 +91,22 @@ def prepare_audio(video, work, semitones):
     # bande-son d'origine, gardee pour le remux final (etape export)
     audio_original = os.path.join(work, "audio_original.m4a")
     _run(["ffmpeg", "-y", "-v", "error", "-i", video, "-vn", "-c:a", "aac", "-b:a", "160k", audio_original])
-    # separation voix / musique
-    from demucs.api import Separator
-    sep = Separator(model=DEMUCS_MODEL)
-    _origin, stems = sep.separate_audio_file(wav)
-    vocals = stems["vocals"].mean(0).cpu().numpy() if hasattr(stems["vocals"], "cpu") else np.asarray(stems["vocals"]).mean(0)
-    sr = int(sep.samplerate)
+    # separation voix / musique (API stable demucs 4.0.1 : demucs.api n'existe pas sur PyPI)
+    import torch
+    from demucs.pretrained import get_model
+    from demucs.apply import apply_model
+    from demucs.audio import AudioFile
+    model = get_model(DEMUCS_MODEL)
+    model.eval()
+    sr = int(model.samplerate)
+    mix = AudioFile(wav).read(streams=0, samplerate=sr, channels=model.audio_channels)
+    ref = mix.mean(0)
+    mix = (mix - ref.mean()) / (ref.std() + 1e-8)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    with torch.no_grad():
+        sources = apply_model(model, mix[None], device=device, progress=False)[0]
+    sources = sources * ref.std() + ref.mean()
+    vocals = sources[model.sources.index("vocals")].mean(0).cpu().numpy()
     # pitch up : cacher le « qui » sans perdre les mots (le modele a besoin de la voix pour la bouche)
     import pyrubberband as pyrb
     shifted = pyrb.pitch_shift(vocals, sr, semitones)

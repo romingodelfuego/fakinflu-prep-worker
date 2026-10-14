@@ -34,16 +34,20 @@ RUN pip3 install \
       "opencv-python-headless==4.10.0.84" \
       "mediapipe==0.10.14"
 RUN pip3 install "demucs==4.0.1" "pyrubberband==0.3.0" "soundfile==0.12.1"
-RUN pip3 install runpod
+# runpod depend de fastapi[all]>=0.94 (borne haute absente) -> pip prendrait fastapi>=0.116 qui tire
+# fastapi-cloud-cli -> opentelemetry -> protobuf>=5, INCOMPATIBLE avec mediapipe (protobuf<5) : c'est
+# ce conflit qui faisait exploser le resolver. On borne fastapi[all]<0.116 (0.115.x : pas d'opentelemetry).
+RUN pip3 install "fastapi[all]<0.116" "protobuf<5" runpod
 
 # Depth-Anything-V2 (petit modele, rapide) mis en cache HF au build.
 ARG DEPTH_MODEL=depth-anything/Depth-Anything-V2-Small-hf
 ENV DEPTH_MODEL=${DEPTH_MODEL}
 RUN python3 -c "from transformers import pipeline; pipeline('depth-estimation', model='${DEPTH_MODEL}')"
 
-# Poids Demucs htdemucs mis en cache torch au build ; modeles MediaPipe (face_mesh, selfie) fournis
-# dans le paquet pip, instancies ici pour verifier leur presence (aucun telechargement au runtime).
-RUN python3 -c "from demucs.api import Separator; Separator(model='htdemucs')" \
+# Poids Demucs htdemucs mis en cache torch au build (get_model : demucs.api n'existe pas dans le
+# demucs 4.0.1 de PyPI) ; modeles MediaPipe (face_mesh, selfie) fournis dans le paquet pip,
+# instancies ici pour verifier leur presence (aucun telechargement au runtime).
+RUN python3 -c "from demucs.pretrained import get_model; get_model('htdemucs')" \
  && python3 -c "import mediapipe as mp; mp.solutions.face_mesh.FaceMesh(); mp.solutions.selfie_segmentation.SelfieSegmentation()"
 
 # Plus aucun acces reseau au runtime pour Hugging Face (cache HF deja peuple).
