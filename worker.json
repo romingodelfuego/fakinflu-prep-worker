@@ -24,5 +24,5 @@
     "notes": "Serverless (catalogue RunPod 2026-10-08) : AMPERE_24 0,69 $/h (A5000/3090/L4). Charge legere (Depth-Anything-V2 Small + MediaPipe CPU + Demucs). Mesurer au premier run ; passer sur ADA_24 si la depth sur longues videos est lente.",
     "price_per_h": 0.69
   },
-  "version": "v1.0.4"
+  "version": "v1.0.1"
 }
