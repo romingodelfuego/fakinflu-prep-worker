@@ -68,7 +68,7 @@ def selfie_seg():
 def _run(cmd, timeout=1800):
     r = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
     if r.returncode != 0:
-        raise RuntimeError(f"{cmd[0]} a echoue : {r.stderr.decode()[-500:]}")
+        raise RuntimeError(f"{cmd[0]} failed: {r.stderr.decode()[-500:]}")
     return r
 
 
@@ -140,7 +140,7 @@ def process(video, work, params, emit_progress):
 
     # 1) audio (optionnel)
     if params.get("has_audio", True) and has_audio_stream(video):
-        yield from emit_progress("audio : separation voix / pitch", 5)
+        yield from emit_progress("audio: voice separation / pitch", 5)
         try:
             vocals, audio_original = prepare_audio(video, work, int(params.get("pitch_semitones", 3)))
             if vocals:
@@ -149,7 +149,7 @@ def process(video, work, params, emit_progress):
                 out["audio_original"] = audio_original
         except Exception as e:
             traceback.print_exc()
-            yield {"type": "progress", "step": f"audio ignore ({type(e).__name__})"}
+            yield {"type": "progress", "step": f"audio skipped ({type(e).__name__})"}
 
     # 2) frames : depth + cutout + facemesh
     cap = cv2.VideoCapture(video)
@@ -196,13 +196,13 @@ def process(video, work, params, emit_progress):
         cv2.imwrite(os.path.join(cdir, f"{i:06d}.png"), canvas)
         i += 1
         if i % 15 == 0:
-            yield from emit_progress(f"images {i}/{limit or total}", 10 + int(80 * i / max(1, limit or total)))
+            yield from emit_progress(f"frames {i}/{limit or total}", 10 + int(80 * i / max(1, limit or total)))
     cap.release()
     if i == 0:
-        raise RuntimeError("aucune image lue dans la video")
+        raise RuntimeError("no frame read from the video")
 
     # 3) encodage H.264 (yuv420p, dimensions paires) des sequences de frames
-    yield from emit_progress("encodage de la video de controle", 92)
+    yield from emit_progress("encoding control video", 92)
     control = os.path.join(work, "control_video.mp4")
     _run(["ffmpeg", "-y", "-v", "error", "-framerate", f"{fps}", "-i", os.path.join(cdir, "%06d.png"),
           "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", control])
@@ -236,7 +236,7 @@ def handler(job):
         paths, events = fetch_inputs(inp, os.path.join(work, "in"), outputs)
         yield from events
         if "video" not in paths:
-            raise ValueError("entree « video » absente")
+            raise ValueError("missing \"video\" input")
 
         produced = {}
         def emit_progress(step, pct):
